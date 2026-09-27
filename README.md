@@ -1,14 +1,23 @@
 # Customer Churn Prediction & Retention Analytics
 
-An end-to-end customer churn analytics project using Python, machine learning and Power BI to identify customers at higher risk of churn and translate analytical findings into customer-retention recommendations.
+An end-to-end customer churn analytics project using Python, machine learning and Power BI to identify patterns associated with customer churn and translate analytical findings into customer-retention recommendations.
 
 ## Project Overview
 
-Customer churn is an important business problem because identifying customers who are likely to leave can help organisations develop targeted retention strategies.
+Customer churn is an important business problem because identifying customers who may be more likely to leave can help organisations prioritise retention activity.
 
-This project analyses approximately **100,000 customer records** to explore patterns associated with customer churn and develop predictive classification models.
+This project analyses a **synthetic dataset containing 100,000 customer records** to explore customer and account characteristics associated with churn and develop predictive classification models.
 
-The project combines exploratory data analysis, feature selection, machine learning, model evaluation and business intelligence reporting.
+The project combines:
+
+- Exploratory data analysis
+- Data preparation and feature selection
+- Logistic Regression
+- XGBoost
+- Hyperparameter tuning
+- Model evaluation
+- Power BI visualisation
+- Business-focused recommendations
 
 ## Objectives
 
@@ -16,7 +25,8 @@ The project combines exploratory data analysis, feature selection, machine learn
 - Identify customer segments with higher churn risk.
 - Build and compare classification models.
 - Evaluate model performance using accuracy, precision, recall and ROC-AUC.
-- Identify practical customer-retention opportunities.
+- Tune the XGBoost model and examine the precision-recall trade-off.
+- Translate analytical findings into practical customer-retention recommendations.
 - Communicate findings through a Power BI dashboard.
 
 ## Tools & Technologies
@@ -28,16 +38,24 @@ The project combines exploratory data analysis, feature selection, machine learn
 - **Scikit-learn**
 - **XGBoost**
 - **Matplotlib**
+- **Seaborn**
 - **Power BI**
 
 ## Dataset
 
-The project uses approximately **100,000 customer records** containing customer and account-related variables, including:
+The project uses a synthetic customer churn dataset containing **100,000 records**.
 
-- Contract type
-- Customer tenure
+Key variables include:
+
+- Customer ID
+- Age
+- Gender
+- Tenure
 - Monthly charges
-- Other customer characteristics
+- Contract type
+- Payment method
+- Total charges
+- Churn status
 
 The analysis focuses on identifying patterns associated with customer churn.
 
@@ -45,74 +63,132 @@ The analysis focuses on identifying patterns associated with customer churn.
 
 ### 1. Exploratory Data Analysis
 
-The data was explored to understand:
+The dataset was explored to understand:
 
 - Customer and account characteristics
-- Churn distribution
-- Churn patterns across customer segments
+- Overall churn distribution
 - Relationships between customer attributes and churn
+- Differences in churn patterns across customer segments
+- Relationships between tenure, monthly charges and churn
+
+The dataset contains approximately **33.14% churned customers**.
 
 ### 2. Data Preparation
 
 The analysis included:
 
-- Reviewing the dataset structure and variables
-- Preparing features for modelling
-- Removing selected features that were not considered useful for the modelling process
-- Preparing the data for classification
+- Removing the customer identifier from modelling features
+- Encoding categorical variables
+- Preparing the churn target variable
+- Removing missing observations
+- Creating selected derived features for modelling
+- Splitting the data into training and test sets
 
-### 3. Feature Selection
+### 3. Feature Engineering
 
-Feature selection was used to remove selected variables and focus the modelling process on relevant information.
+Additional features were created to explore customer risk patterns, including:
 
-### 4. Model Development
+- `LogTotalCharges`
+- `RiskIndex`
+- `ExpensivePlan`
 
-Two classification models were developed and evaluated:
+The `RiskIndex` combines shorter tenure and higher monthly charges to represent a simple customer-risk indicator.
 
-- **Logistic Regression**
-- **XGBoost**
+### 4. Logistic Regression
 
-Hyperparameter tuning was performed with the aim of balancing precision and recall.
+Logistic Regression was used as a baseline classification model.
 
-## Model Performance
+The model was trained using scaled features and class weighting to account for the class distribution.
+
+**Results:**
+
+- Accuracy: **69.1%**
+- ROC-AUC: **0.773**
+
+### 5. XGBoost
+
+XGBoost was developed as a second classification model.
+
+The baseline XGBoost model achieved:
+
+- Accuracy: **75.7%**
+- Precision for churn class: **66%**
+- Recall for churn class: **55%**
+- ROC-AUC: **0.802**
+
+### 6. Hyperparameter Tuning
+
+RandomizedSearchCV with **5-fold cross-validation** was used to explore XGBoost hyperparameters.
+
+The search evaluated combinations of parameters including:
+
+- Maximum tree depth
+- Learning rate
+- Number of estimators
+- Subsampling
+- Column sampling
+- Minimum child weight
+- Gamma
+- Class weighting
+- L1 and L2 regularisation
+
+The search used an **F2 scoring metric**, placing greater emphasis on recall.
+
+The tuned model achieved a ROC-AUC of approximately:
+
+**0.808**
+
+### 7. Classification Threshold
+
+Rather than relying only on the default classification threshold, a threshold was selected using the precision-recall curve to balance precision and recall.
+
+The selected threshold was approximately **0.693**.
+
+At this threshold, the tuned XGBoost model achieved approximately:
+
+- Accuracy: **76%**
+- Precision: **63%**
+- Recall: **61%**
+- F1-score: **62%**
+- ROC-AUC: **0.808**
+
+## Model Comparison
 
 | Model | Accuracy | ROC-AUC |
 |---|---:|---:|
-| Logistic Regression | 69% | 0.77 |
-| XGBoost | **76%** | **0.80** |
+| Logistic Regression | 69.1% | 0.773 |
+| XGBoost | 75.7% | 0.802 |
+| Tuned XGBoost | ~76% | 0.808 |
 
-XGBoost produced stronger overall performance than Logistic Regression based on the evaluation results.
-
-The XGBoost model also achieved:
-
-- **Precision:** 73%
-- **Recall:** 72%
+The tuned XGBoost model produced the highest ROC-AUC among the evaluated models.
 
 ## Key Findings
 
 The analysis identified several patterns associated with customer churn:
 
 - Customers with **shorter tenure** showed higher churn risk.
-- Customers on **monthly contracts** represented an important higher-risk segment.
-- **Monthly charges** were associated with differences in churn behaviour.
-- Customer characteristics showed different levels of association with churn.
+- **Monthly charges** were higher on average among customers who churned.
+- **Contract type** showed a meaningful relationship with churn, with month-to-month customers representing an important higher-risk segment.
+- Longer-term contract types showed lower association with churn than month-to-month contracts.
+
+These findings were used to identify customer segments that could be prioritised for retention activity.
 
 ## Business Recommendation
 
-Based on the analysis, customers on **monthly contracts with shorter tenure** should be considered a priority segment for targeted retention activity.
+Based on the analysis, customers on **month-to-month contracts with shorter tenure** should be considered an important segment for targeted retention activity.
 
 Potential actions could include:
 
-- Targeted retention campaigns
 - Early engagement with newer customers
-- Offers or incentives for customers at higher risk of churn
-- Monitoring high-risk customer segments using data-driven indicators
+- Targeted retention campaigns
+- Offers or incentives for customers showing higher churn risk
+- Monitoring customer segments using data-driven churn indicators
 
-The aim is to help prioritise retention activity using customer data rather than applying the same approach to all customers.
+The objective is to help prioritise retention activity rather than applying the same approach to every customer.
 
 ## Power BI Dashboard
 
-The project includes a Power BI dashboard for communicating customer churn patterns and model performance.
+A Power BI dashboard was developed to communicate customer churn patterns, customer segments and model performance.
 
 ![Customer Churn Dashboard](dashboard/customer_churn_dashboard.png)
 
@@ -131,17 +207,19 @@ The project includes a Power BI dashboard for communicating customer churn patte
 - Python data analysis
 - Exploratory data analysis
 - Data preparation
+- Feature engineering
 - Feature selection
 - Classification modelling
 - Logistic Regression
 - XGBoost
 - Hyperparameter tuning
+- Cross-validation
 - Model evaluation
-- Precision and recall analysis
+- Precision-recall analysis
 - Data visualisation
 - Power BI
 - Translating analytical findings into business recommendations
 
 Conclusion
 
-This project demonstrates an end-to-end approach to customer churn analytics, from exploring customer data and developing predictive models to identifying higher-risk customer segments and translating findings into practical retention recommendations.
+This project demonstrates an end-to-end approach to customer churn analytics, from exploring customer data and preparing features to developing and tuning predictive models, evaluating performance and translating findings into practical customer-retention recommendations.
